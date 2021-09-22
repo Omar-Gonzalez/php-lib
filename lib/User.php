@@ -50,20 +50,14 @@ class User
      */
     function login(string $email, string $password)
     {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         try {
             $sth = $this->dbh->prepare("SELECT * FROM users WHERE email = ?");
             $sth->execute([$email]);
             $user = $sth->fetch();
-            if ($user) {
-                if (password_verify($password, $user['password'])) {
-                    $this->email = $user['email'];
-                    $this->created = $user['created'];
-                    $_SESSION['auth'] = True;
-                } else {
-                    $_SESSION['auth'] = False;
-                    throw new Exception("Login exception: Wrong credentials, please try again");
-                }
+            if (($user) && (password_verify($password, $user['password']))) {
+                $this->email = $user['email'];
+                $this->created = $user['created'];
+                $_SESSION['auth'] = True;
             } else {
                 $_SESSION['auth'] = False;
                 throw new Exception("Login exception: Wrong credentials, please try again");
