@@ -63,9 +63,9 @@ class User
         }
     }
 
-    function logout()
+    static function logout()
     {
-        $_SESSION['auth'] = False;
+        session_start();
         session_destroy();
     }
 

@@ -9,9 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<div class='alert alert-danger text-center' role='alert'>{$e->getMessage()}</div>";
     }
 }
-
 ?>
-
 
 <div class="container mt-3">
     <div class="row justify-content-center">
