@@ -3,7 +3,6 @@ require 'lib/dbh.php';
 require 'lib/User.php';
 
 $user = new User($dbh);
-
 ?>
 
 <!doctype html>
@@ -36,7 +35,6 @@ $user = new User($dbh);
         </div>
     </div>
 </nav>
-
 
 <!-- Bootstrap 5 JS bunddle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"

@@ -5,6 +5,9 @@ class User
 
     # Database handler
     private $dbh;
+    private $session_expires_in_days = 30;
+    private $input_min_lenght = 6;
+    private $input_max_lenght = 35;
 
     public function __construct(object $dbh)
     {
@@ -16,23 +19,49 @@ class User
     }
 
     /**
-     * @throws Exception "Invalid Email or Weak Password"
+     * @throws Exception Invalid strlen
      */
-    function register(string $email, string $password)
+    private function validate_input_size(string $validate)
     {
-        # Email Validation
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("User registration exception: invalid email, please try again");
+        if (strlen($validate) < $this->input_min_lenght || strlen($validate) > $this->input_max_lenght) {
+            throw new Exception("User registration exception: email and password must be between 6 and 35 characters in length");
         }
+    }
+
+    /**
+     * @throws Exception Invalid Password Strength
+     */
+    private function validate_pwd_strength(string $password)
+    {
         # Password Validation
         $uppercase = preg_match('@[A-Z]@', $password);
         $lowercase = preg_match('@[a-z]@', $password);
         $number = preg_match('@[0-9]@', $password);
         $specialChars = preg_match('@[^\w]@', $password);
 
-        if (!$uppercase || !$lowercase || !$number || !$specialChars || strlen($password) < 6) {
-            throw new Exception("User registration exception: Password should be at least 8 characters in length and should include at least one upper case letter, one number, and one special character.");
+        if (!$uppercase || !$lowercase || !$number || !$specialChars) {
+            throw new Exception("User registration exception: Password should include at least one upper case letter, one number, and one special character.");
         }
+    }
+
+    /**
+     * @throws Exception Invalid Email
+     */
+    private function validate_email(string $email)
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("User registration exception: invalid email, please try again");
+        }
+    }
+
+
+    function register(string $email, string $password)
+    {
+        $this->validate_input_size($email);
+        $this->validate_input_size($password);
+        $this->validate_email($email);
+        $this->validate_pwd_strength($password);
+
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $sth = $this->dbh->prepare("INSERT INTO `users` (`email`,`password`) VALUES (?,?)");
@@ -47,6 +76,9 @@ class User
      */
     function login(string $email, string $password)
     {
+        $this->validate_input_size($email);
+        $this->validate_input_size($password);
+        $this->validate_email($email);
         try {
             $sth = $this->dbh->prepare("SELECT * FROM users WHERE email = ?");
             $sth->execute([$email]);
@@ -54,6 +86,8 @@ class User
             if (($user) && (password_verify($password, $user['password']))) {
                 $_SESSION['auth'] = True;
                 $_SESSION['email'] = $email;
+                $_SESSION['start'] = time();
+                $_SESSION['expire'] = $_SESSION['start'] + ($this->session_expires_in_days * 24 * 60 * 60);
             } else {
                 $_SESSION['auth'] = False;
                 throw new Exception("Login exception: Wrong credentials, please try again");
@@ -65,14 +99,24 @@ class User
 
     static function logout()
     {
-        session_start();
+        if (!isset($_SESSION)) {
+            session_start();
+        }
         session_destroy();
+        session_write_close();
     }
 
 
     function is_auth(): bool
     {
-        return ($_SESSION['auth'] ?? False);
+        $session = ($_SESSION['auth'] ?? False);
+        $now = time();
+        if ($session && ($now > $_SESSION['expire'])) {
+            User::logout();
+            return false;
+        }
+        return $session;
+
     }
 
     function email(): string
