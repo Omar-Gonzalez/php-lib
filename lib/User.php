@@ -37,9 +37,9 @@ class User
         $uppercase = preg_match('@[A-Z]@', $password);
         $lowercase = preg_match('@[a-z]@', $password);
         $number = preg_match('@[0-9]@', $password);
-        $specialChars = preg_match('@[^\w]@', $password);
+        $special_chars = preg_match('@[^\w]@', $password);
 
-        if (!$uppercase || !$lowercase || !$number || !$specialChars) {
+        if (!$uppercase || !$lowercase || !$number || !$special_chars) {
             throw new Exception("User registration exception: Password should include at least one upper case letter, one number, and one special character.");
         }
     }
@@ -117,6 +117,18 @@ class User
         }
         return $session;
 
+    }
+
+    function fetchAll(int $limit, string $order): array
+    {
+        try {
+            $sth = $this->dbh->prepare("SELECT id, email, created FROM users ORDER BY id {$order} LIMIT {$limit}");
+            $sth->execute();
+            $users = $sth->fetchAll();
+            return $users;
+        } catch (PDOException $e) {
+            echo "Fetch Users Exception: {$e->getMessage()}";
+        }
     }
 
     function email(): string
