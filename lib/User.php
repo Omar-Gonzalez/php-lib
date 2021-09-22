@@ -3,9 +3,6 @@
 class User
 {
 
-    # Add user properties as required
-    public $email;
-    public $created;
     # Database handler
     private $dbh;
 
@@ -55,9 +52,8 @@ class User
             $sth->execute([$email]);
             $user = $sth->fetch();
             if (($user) && (password_verify($password, $user['password']))) {
-                $this->email = $user['email'];
-                $this->created = $user['created'];
                 $_SESSION['auth'] = True;
+                $_SESSION['email'] = $email;
             } else {
                 $_SESSION['auth'] = False;
                 throw new Exception("Login exception: Wrong credentials, please try again");
@@ -70,13 +66,17 @@ class User
     function logout()
     {
         $_SESSION['auth'] = False;
-        $this->email = NULL;
-        $this->created = NULL;
+        session_destroy();
     }
 
 
     function is_auth(): bool
     {
         return ($_SESSION['auth'] ?? False);
+    }
+
+    function email(): string
+    {
+        return ($_SESSION['email'] ?? '');
     }
 }
