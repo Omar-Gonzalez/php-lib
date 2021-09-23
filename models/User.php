@@ -55,7 +55,7 @@ class User
     }
 
 
-    function register(string $email, string $password)
+    function register(string $email, string $password, string $role)
     {
         $this->validate_input_size($email);
         $this->validate_input_size($password);
@@ -64,8 +64,8 @@ class User
 
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $sth = $this->dbh->prepare("INSERT INTO `users` (`email`,`password`) VALUES (?,?)");
-            $sth->execute([$email, $hashed_password]);
+            $sth = $this->dbh->prepare("INSERT INTO `users` (`email`,`password`,`role`) VALUES (?,?,?)");
+            $sth->execute([$email, $hashed_password, $role]);
         } catch (PDOException $e) {
             echo "User registration exception: " . $e->getMessage();
         }
@@ -122,7 +122,7 @@ class User
     function fetchAll(int $limit, string $order): array
     {
         try {
-            $sth = $this->dbh->prepare("SELECT id, email, created FROM users ORDER BY id {$order} LIMIT {$limit}");
+            $sth = $this->dbh->prepare("SELECT id, email, role, created FROM users ORDER BY id {$order} LIMIT {$limit}");
             $sth->execute();
             $users = $sth->fetchAll();
             return $users;

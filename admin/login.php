@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="col-lg-4 col-md-6 col-12">
             <form method="post">
                 <div class="mb-3">
-                    <label class="form-label">Email address</label>
+                    <label class="form-label">Email</label>
                     <input name="email" type="email" class="form-control" aria-describedby="emailHelp" minlength="6"
                            maxlength="35" required>
                     <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>

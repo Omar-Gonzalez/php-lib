@@ -1,6 +1,6 @@
 <?php
 require 'lib/dbh.php';
-require 'lib/User.php';
+require 'models/User.php';
 
 $user = new User($dbh);
 
