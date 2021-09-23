@@ -55,7 +55,7 @@ class User
     }
 
 
-    function register(string $email, string $password, string $role)
+    function register(string $email, string $password, string $role): array
     {
         $this->validate_input_size($email);
         $this->validate_input_size($password);
@@ -66,8 +66,9 @@ class User
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $sth = $this->dbh->prepare("INSERT INTO `users` (`email`,`password`,`role`) VALUES (?,?,?)");
             $sth->execute([$email, $hashed_password, $role]);
+            return ["result" => "ok", "msg" => "Se agrego el usuario {$email} con exito"];
         } catch (PDOException $e) {
-            echo "User registration exception: " . $e->getMessage();
+            return ["result" => "exception", "msg" => $e->getMessage()];
         }
     }
 

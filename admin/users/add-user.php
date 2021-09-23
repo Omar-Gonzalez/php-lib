@@ -12,9 +12,14 @@ if (!$user->is_auth()) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post_result = ["class" => "", "msg" => ""];
     if ($_POST['password'] == $_POST['password-2']) {
-        $user->register($_POST['email'], $_POST['password'], $_POST['role']);
-        $post_result["msg"] = "Se agrego el usuario {$_POST['email']} con exito";
-        $post_result["class"] = "alert-success";
+        $result = $user->register($_POST['email'], $_POST['password'], $_POST['role']);
+        if($result['result'] == "ok"){
+            $post_result["msg"] = $result["msg"];
+            $post_result["class"] = "alert-success";
+        }else{
+            $post_result["msg"] = $result["msg"];
+            $post_result["class"] = "alert-danger";
+        }
     } else {
         $post_result["msg"] = "Ambos passwords deben coincidir, por favor intenta de nuevo";
         $post_result["class"] = "alert-danger";
