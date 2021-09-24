@@ -31,19 +31,14 @@ if ($result['result']) {
 <?php include '../../html-includes/head.php' ?>
 <?php include '../../html-includes/navbar-top.php' ?>
 
-<?php
-if ($user->is_auth()) {
-    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back {$user->email()}</a></li>";
-    echo "<li class=nav-item'><a class='nav-link' href='/'>Inicio</a></li>";
-    echo "<li class=nav-item'><a class='nav-link' href='/admin'>Admin</a></li>";
-    echo "<li class=nav-item'><a class='nav-link' href='/admin/users'>Usuarios</a></li>";
-    echo "<li class=nav-item'><a class='nav-link disabled' href='#'>{$usr['email']}</a></li>";
-    echo "<li class=nav-item'><a class='nav-link' href='/admin/logout.php'>Logout</a></li>";
-} else {
-    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back</a></li>";
-    echo "<li class=nav-item'><a class='nav-link' href='/'>Home</a></li>";
-}
-?>
+    <li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome
+            back <?php echo $user->email(); ?></a></li>
+    <li class=nav-item'><a class='nav-link' href='/'>Inicio</a></li>
+    <li class=nav-item'><a class='nav-link' href='/admin'>Admin</a></li>
+    <li class=nav-item'><a class='nav-link' href='/admin/users'>Usuarios</a></li>
+    <li class=nav-item'><a class='nav-link disabled' href='#'><?php echo $usr['email']; ?></a></li>
+    <li class=nav-item'><a class='nav-link' href='/admin/logout.php'>Logout</a></li>
+
 <?php include '../../html-includes/navbar-bottom.php' ?>
 
 <?php if (!$result['result']) { ?>
