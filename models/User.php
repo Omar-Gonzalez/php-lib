@@ -4,7 +4,6 @@ require 'AbstractModel.php';
 class User extends Model
 {
 
-    # Database handler
     private $dbh;
     private $session_expires_in_days = 30;
     private $input_min_lenght = 6;
@@ -87,6 +86,8 @@ class User extends Model
             $sth->execute([$email]);
             $user = $sth->fetch();
             if (($user) && (password_verify($password, $user['password']))) {
+                $_SESSION['email'] = $email;
+                $_SESSION['role'] = $user['role'];
                 $_SESSION['auth'] = true;
                 $_SESSION['email'] = $email;
                 $_SESSION['start'] = time();
@@ -141,9 +142,9 @@ class User extends Model
             $sth = $this->dbh->prepare("SELECT * FROM {$this->table_name} WHERE id = ?");
             $sth->execute([$id]);
             $user = $sth->fetch();
-            if ($user){
+            if ($user) {
                 return ['result' => true, 'user' => $user];
-            }else{
+            } else {
                 return ['result' => false, 'msg' => "No existe el usuario con indice: {$id}"];
             }
         } catch (PDOException $e) {
@@ -162,8 +163,38 @@ class User extends Model
         }
     }
 
-    function email(): string
+    public function update(int $id, array $values): array
+    {
+        $this->validate_input_size($values['email']);
+        $this->validate_email($values['email']);
+
+        $statement = "UPDATE `{$this->table_name}` SET email = ?, role = ? WHERE id = ?";
+        $execute_vals = [$values['email'], $values['role'], $values['id']];
+
+        if (strlen($values['password']) > 6) {
+            $this->validate_input_size($values['password']);
+            $this->validate_pwd_strength($values['password']);
+            $hashed_password = password_hash($values['password'], PASSWORD_DEFAULT);
+            $statement = "UPDATE `{$this->table_name}` SET email = ?, role = ?, password = ? WHERE id = ?";
+            $execute_vals = [$values['email'], $values['role'], $hashed_password, $values['id']];
+        }
+
+        try {
+            $sth = $this->dbh->prepare($statement);
+            $sth->execute($execute_vals);
+            return ["result" => true, "msg" => "Se actualizo el usuario {$values['email']} con exito"];
+        } catch (PDOException $e) {
+            return ["result" => false, "msg" => $e->getMessage()];
+        }
+    }
+
+    public function email()
     {
         return ($_SESSION['email'] ?? '');
+    }
+
+    public function role()
+    {
+        return ($_SESSION['role'] ?? '');
     }
 }

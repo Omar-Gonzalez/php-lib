@@ -8,6 +8,15 @@ $user = new User($dbh);
 if (!$user->is_auth()) {
     redirect('/');
 }
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $values = ['email' => $_POST['email'], 'role' => $_POST['role'], 'password' => $_POST['password'], 'id' => $_POST['id']];
+    $result = $user->update($_POST['id'], $values);
+    if ($result['result']) {
+        redirect('/admin/users');
+    }
+}
+
 $result = $user->fetch($_GET['user'] ?? 0);
 $usr = [];
 
@@ -17,12 +26,6 @@ if ($result['result']) {
     $usr['email'] = 'Usuario';
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $del_result = $user->delete($_POST['user']);
-    if ($del_result['result']) {
-        redirect('/admin/users');
-    }
-}
 ?>
 
 <?php include '../../html-includes/head.php' ?>
@@ -43,7 +46,6 @@ if ($user->is_auth()) {
 ?>
 <?php include '../../html-includes/navbar-bottom.php' ?>
 
-
 <?php if (!$result['result']) { ?>
     <div class="container mt-5">
         <div class="row justify-content-center">
@@ -55,27 +57,36 @@ if ($user->is_auth()) {
         </div>
     </div>
 <?php } else { ?>
-    <div class="container mt-5">
+    <div class="container mt-3">
         <div class="row justify-content-center">
-            <div class="col-12 col-lg-6 col-md-8">
-                <div class="alert alert-danger text-center">
-                    <h3>¿Estas seguro que quieres borrar el usuario <b><?php echo $usr['email']; ?></b>?</h3>
-                    <h4>Esta acción no se puede revertir</h4>
-                </div>
+            <div class="col-lg-4 col-md-6 col-12">
                 <form method="post">
-                    <input type="hidden" name="user" value="<?php echo $usr['id'] ?>">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-danger btn-lg">Borra usuario</button>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" aria-describedby="emailHelp" minlength="6"
+                               maxlength="35" value="<?php echo $usr['email'] ?>" required>
+                        <input type="hidden" name="id" value="<?php echo $usr['id'] ?>">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Selecciona un rol para la cuenta</label>
+                        <select name="role" class="form-select" aria-label="Default select example">
+                            <option value="USUARIO" selected>Usuario</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cambia password o deja en blanco</label>
+                        <input name="password" type="password" class="form-control" minlength="6" maxlength="35">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Verifica Password</label>
+                        <input name="password-2" type="password" class="form-control" minlength="6" maxlength="35">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualiza</button>
                 </form>
             </div>
         </div>
     </div>
-
 <?php } ?>
 
 <?php include '../../html-includes/footer.php' ?>

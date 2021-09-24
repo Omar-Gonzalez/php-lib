@@ -33,4 +33,11 @@ abstract class Model
      * @return array
      */
     abstract public function delete(int $id): array;
+
+    /**
+     * @param int $id
+     * @param array $values
+     * @return array
+     */
+    abstract public function update(int $id, array $values):array;
 }

@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post_result = ["class" => "", "msg" => ""];
     if ($_POST['password'] == $_POST['password-2']) {
         $result = $user->register($_POST['email'], $_POST['password'], $_POST['role']);
-        if($result['result']){
+        if ($result['result']) {
             $post_result["msg"] = $result["msg"];
             $post_result["class"] = "alert-success";
-        }else{
+        } else {
             $post_result["msg"] = $result["msg"];
             $post_result["class"] = "alert-danger";
         }
@@ -25,35 +25,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $post_result["class"] = "alert-danger";
     }
 }
-
-include "../../html-includes/head.php";
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <?php
-                if ($user->is_auth()) {
-                    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back {$user->email()}</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link' href='/'>Inicio</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link' href='/admin'>Admin</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link' href='/admin/users'>Usuarios</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link disabled' href='#'>Agrega Usuario</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link' href='/admin/logout.php'>Logout</a></li>";
-                } else {
-                    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back</a></li>";
-                    echo "<li class=nav-item'><a class='nav-link' href='/'>Home</a></li>";
-                }
-                ?>
-            </ul>
-        </div>
-    </div>
-</nav>
+<?php include "../../html-includes/head.php"; ?>
+<?php include "../../html-includes/navbar-top.php"; ?>
+
+<?php
+if ($user->is_auth()) {
+    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back {$user->email()}</a></li>";
+    echo "<li class=nav-item'><a class='nav-link' href='/'>Inicio</a></li>";
+    echo "<li class=nav-item'><a class='nav-link' href='/admin'>Admin</a></li>";
+    echo "<li class=nav-item'><a class='nav-link' href='/admin/users'>Usuarios</a></li>";
+    echo "<li class=nav-item'><a class='nav-link disabled' href='#'>Agrega Usuario</a></li>";
+    echo "<li class=nav-item'><a class='nav-link' href='/admin/logout.php'>Logout</a></li>";
+} else {
+    echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back</a></li>";
+    echo "<li class=nav-item'><a class='nav-link' href='/'>Home</a></li>";
+}
+?>
+
+<?php include "../../html-includes/navbar-bottom.php"; ?>
 
 <?php if (isset($post_result)) { ?>
     <div class="container-fluid mt-3">
