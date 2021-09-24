@@ -1,6 +1,7 @@
 <?php
+require 'AbstractModel.php';
 
-class User
+class User extends Model
 {
 
     # Database handler
@@ -8,6 +9,7 @@ class User
     private $session_expires_in_days = 30;
     private $input_min_lenght = 6;
     private $input_max_lenght = 35;
+    private $table_name = "users";
 
     public function __construct(object $dbh)
     {
@@ -64,37 +66,38 @@ class User
 
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $sth = $this->dbh->prepare("INSERT INTO `users` (`email`,`password`,`role`) VALUES (?,?,?)");
+            $sth = $this->dbh->prepare("INSERT INTO `{$this->table_name}` (`email`,`password`,`role`) VALUES (?,?,?)");
             $sth->execute([$email, $hashed_password, $role]);
-            return ["result" => "ok", "msg" => "Se agrego el usuario {$email} con exito"];
+            return ["result" => true, "msg" => "Se agrego el usuario {$email} con exito"];
         } catch (PDOException $e) {
-            return ["result" => "exception", "msg" => $e->getMessage()];
+            return ["result" => false, "msg" => $e->getMessage()];
         }
     }
 
     /**
      * @throws Exception "Wrong Credentials"
      */
-    function login(string $email, string $password)
+    function login(string $email, string $password): array
     {
         $this->validate_input_size($email);
         $this->validate_input_size($password);
         $this->validate_email($email);
         try {
-            $sth = $this->dbh->prepare("SELECT * FROM users WHERE email = ?");
+            $sth = $this->dbh->prepare("SELECT * FROM {$this->table_name} WHERE email = ?");
             $sth->execute([$email]);
             $user = $sth->fetch();
             if (($user) && (password_verify($password, $user['password']))) {
-                $_SESSION['auth'] = True;
+                $_SESSION['auth'] = true;
                 $_SESSION['email'] = $email;
                 $_SESSION['start'] = time();
                 $_SESSION['expire'] = $_SESSION['start'] + ($this->session_expires_in_days * 24 * 60 * 60);
+                return ['result' => true];
             } else {
-                $_SESSION['auth'] = False;
-                throw new Exception("Login exception: Wrong credentials, please try again");
+                $_SESSION['auth'] = false;
+                return ['result' => false, 'msg' => 'Credenciales incorrectas, por favor intenta de nuevo'];
             }
         } catch (PDOException $e) {
-            echo $e->getMessage();
+            return ['result' => false, 'msg' => $e->getMessage()];
         }
     }
 
@@ -110,7 +113,7 @@ class User
 
     function is_auth(): bool
     {
-        $session = ($_SESSION['auth'] ?? False);
+        $session = ($_SESSION['auth'] ?? false);
         $now = time();
         if ($session && ($now > $_SESSION['expire'])) {
             User::logout();
@@ -120,15 +123,42 @@ class User
 
     }
 
-    function fetchAll(int $limit, string $order): array
+    function fetch_all(int $limit, string $order): array
     {
         try {
-            $sth = $this->dbh->prepare("SELECT id, email, role, created FROM users ORDER BY id {$order} LIMIT {$limit}");
+            $sth = $this->dbh->prepare("SELECT id, email, role, created FROM {$this->table_name} ORDER BY id {$order} LIMIT {$limit}");
             $sth->execute();
             $users = $sth->fetchAll();
             return $users;
         } catch (PDOException $e) {
             echo "Fetch Users Exception: {$e->getMessage()}";
+        }
+    }
+
+    function fetch(int $id): array
+    {
+        try {
+            $sth = $this->dbh->prepare("SELECT * FROM {$this->table_name} WHERE id = ?");
+            $sth->execute([$id]);
+            $user = $sth->fetch();
+            if ($user){
+                return ['result' => true, 'user' => $user];
+            }else{
+                return ['result' => false, 'msg' => "No existe el usuario con indice: {$id}"];
+            }
+        } catch (PDOException $e) {
+            return ['result' => false, 'msg' => $e->getMessage()];
+        }
+
+    }
+
+    public function delete(int $id): array
+    {
+        try {
+            $this->dbh->prepare("DELETE FROM {$this->table_name} WHERE id = ?")->execute([$id]);
+            return ['result' => true];
+        } catch (PDOException $e) {
+            return ['result' => false, 'msg' => $e->getMessage()];
         }
     }
 

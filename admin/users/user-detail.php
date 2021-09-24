@@ -1,17 +1,25 @@
 <?php
-require "../../models/User.php";
-require "../../lib/dbh.php";
-require "../../lib/helpers.php";
+require '../../lib/dbh.php';
+require '../../lib/helpers.php';
+require '../../models/User.php';
 
 $user = new User($dbh);
 
 if (!$user->is_auth()) {
-    redirect('/admin');
+    redirect('/');
+}
+$result = $user->fetch($_GET['user'] ?? 0);
+$usr = [];
+
+if($result['result']){
+    $usr = $result['user'];
+}else{
+    $usr['email'] = 'Usuario';
 }
 
-include "../../html-includes/head.php";
-?>
 
+include '../../html-includes/head.php';
+?>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -25,7 +33,8 @@ include "../../html-includes/head.php";
                         echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back {$user->email()}</a></li>";
                         echo "<li class=nav-item'><a class='nav-link' href='/'>Inicio</a></li>";
                         echo "<li class=nav-item'><a class='nav-link' href='/admin'>Admin</a></li>";
-                        echo "<li class=nav-item'><a class='nav-link disabled' href='#'>Usuarios</a></li>";
+                        echo "<li class=nav-item'><a class='nav-link' href='/admin/users'>Usuarios</a></li>";
+                        echo "<li class=nav-item'><a class='nav-link disabled' href='#'>{$usr['email']}</a></li>";
                         echo "<li class=nav-item'><a class='nav-link' href='/admin/logout.php'>Logout</a></li>";
                     } else {
                         echo "<li class=nav-item'><a class='nav-link active' aria-current='page' href='#'>Welcome back</a></li>";
@@ -37,20 +46,26 @@ include "../../html-includes/head.php";
         </div>
     </nav>
 
-<?php
 
-$users = $user->fetch_all(100, 'ASC');
-
-
-?>
-
+<?php if (!$result['result']) { ?>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-6">
+                <div class="alert alert-danger text-center">
+                    <?php echo $result['msg'] ?>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php } else { ?>
     <div class="container mt-5">
         <div class="row">
             <div class="col-6">
-                <h2 class="text-dark">Usuarios</h2>
+                <h2 class="text-dark"><?php echo $usr['email'] ?></h2>
             </div>
             <div class="col-6 text-end">
-                <a href="add-user.php" type="button" class="btn btn-primary">Agrega nuevo usuario</a>
+                <a href="update-user.php" type="button" class="btn btn-primary">Actualiza usuario</a>
+                <a href="/admin/users/delete-user.php/?user=<?php echo $usr['id'] ?>" type="button" class="btn btn-danger">Elimina usuario</a>
             </div>
         </div>
         <div class="row mt-1">
@@ -65,19 +80,18 @@ $users = $user->fetch_all(100, 'ASC');
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($users as $user) {
-                        echo "<tr>
-                                <th scope='row'>{$user['id']}</th>
-                                <td><a href='user-detail.php/?user={$user['id']}'>{$user['email']}</a></td>
-                                <td>{$user['role']}</td>
-                                <td>{$user['created']}</td>
-                            </tr>";
-                    } ?>
+                    <tr>
+                        <th scope='row'><?php echo $usr['id'] ?></th>
+                        <td><?php echo $usr['email'] ?></td>
+                        <td><?php echo $usr['role'] ?></td>
+                        <td><?php echo $usr['created'] ?></td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+<?php } ?>
 
-<?php include "../../html-includes/footer.php"; ?>
+<?php include '../../html-includes/footer.php' ?>

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post_result = ["class" => "", "msg" => ""];
     if ($_POST['password'] == $_POST['password-2']) {
         $result = $user->register($_POST['email'], $_POST['password'], $_POST['role']);
-        if($result['result'] == "ok"){
+        if($result['result']){
             $post_result["msg"] = $result["msg"];
             $post_result["class"] = "alert-success";
         }else{

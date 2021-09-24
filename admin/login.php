@@ -1,12 +1,9 @@
 <?php
-require "../lib/helpers.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $user->login($_POST['email'], $_POST['password']);
-        redirect("/");
-    } catch (Exception $e) {
-        echo "<div class='alert alert-danger text-center' role='alert'>{$e->getMessage()}</div>";
+    $result = $user->login($_POST['email'], $_POST['password']);
+    if($result['result']){
+        redirect('/admin');
     }
 }
 ?>
@@ -14,6 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container mt-3">
     <div class="row justify-content-center">
         <div class="col-lg-4 col-md-6 col-12">
+            <?php if (isset($result)) {
+                if (!$result['result']) {
+                    echo "<div class='alert alert-danger text-center' role='alert'>{$result['msg']}</div>";
+                }
+            } ?>
             <form method="post">
                 <div class="mb-3">
                     <label class="form-label">Email</label>
